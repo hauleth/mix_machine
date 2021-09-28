@@ -4,10 +4,23 @@ defmodule MixMachine.MixProject do
   def project do
     [
       app: :mix_machine,
+      description: "Produce machine readable output from Mix",
       version: "0.1.0",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      package: [
+        links: %{
+          "GitHub" => "https://github.com/hauleth/mix_machine"
+        },
+        licenses: ~w[MIT]
+      ],
+      docs: [
+        main: "Mix.Tasks.Compile.Machine",
+        groups_for_modules: [
+          Formats: ~r/^MixMachine\.Format\./
+        ]
+      ]
     ]
   end
 
