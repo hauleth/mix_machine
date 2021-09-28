@@ -15,11 +15,14 @@ defmodule MixMachine.Format.Sarif do
       |> Enum.group_by(& &1.compiler_name)
       |> Enum.map(&build(&1, opts.root))
 
-    Jason.encode_to_iodata!(%{
-      version: @version,
-      "$schema": @schema,
-      runs: runs
-    }, pretty: opts.pretty)
+    Jason.encode_to_iodata!(
+      %{
+        version: @version,
+        "$schema": @schema,
+        runs: runs
+      },
+      pretty: opts.pretty
+    )
   end
 
   defp build({name, diagnostics}, root) do
