@@ -5,11 +5,13 @@ defmodule ExampleA.MixProject do
     [
       app: :example_a,
       version: "0.1.0",
-      elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       build_path: "../../../_build",
       deps_path: "../../../deps",
-      deps: deps()
+      deps: deps(),
+      machine: [
+        root: "../../.."
+      ]
     ]
   end
 

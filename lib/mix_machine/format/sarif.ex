@@ -1,4 +1,10 @@
 defmodule MixMachine.Format.Sarif do
+  @moduledoc """
+  Produce [SARIF][] output for use with [GitHub Actions Code Scanning][gha].
+
+  [SARIF]: https://sarifweb.azurewebsites.net
+  [gha]: https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning
+  """
   @behaviour MixMachine.Format
 
   @version "2.1.0"
@@ -6,23 +12,24 @@ defmodule MixMachine.Format.Sarif do
 
   alias Mix.Task.Compiler.Diagnostic
 
-  alias MixMachine.Utils
-
   @impl true
   def render(diagnostics, opts) do
     runs =
       diagnostics
       |> Enum.group_by(& &1.compiler_name)
-      |> Enum.map(&build/1)
+      |> Enum.map(&build(&1, opts.root))
 
-    Jason.encode_to_iodata!(%{
-      version: @version,
-      "$schema": @schema,
-      runs: runs
-    }, pretty: opts.pretty)
+    Jason.encode_to_iodata!(
+      %{
+        version: @version,
+        "$schema": @schema,
+        runs: runs
+      },
+      pretty: opts.pretty
+    )
   end
 
-  defp build({name, diagnostics}) do
+  defp build({name, diagnostics}, root) do
     %{
       tool: %{
         driver: %{
@@ -30,19 +37,16 @@ defmodule MixMachine.Format.Sarif do
           rules: []
         }
       },
-      results: Enum.map(diagnostics, &into_result/1)
+      results: Enum.map(diagnostics, &into_result(&1, root))
     }
   end
 
-  defp into_result(%Diagnostic{} = diagnostic) do
+  defp into_result(%Diagnostic{} = diagnostic, root) do
     %{
       message: %{text: :unicode.characters_to_binary(diagnostic.message)},
       kind: kind(diagnostic.severity),
       level: level(diagnostic.severity),
-      locations: locations(diagnostic),
-      partialFingerprints: %{
-        primaryLocationLineHash: Utils.fingerprint(diagnostic.position)
-      }
+      locations: locations(diagnostic, root)
     }
   end
 
@@ -54,16 +58,15 @@ defmodule MixMachine.Format.Sarif do
   defp level(:hint), do: "note"
   defp level(:information), do: "none"
 
-  defp locations(%Diagnostic{file: file, position: position}) do
-    path = Path.relative_to_cwd(file)
+  defp locations(%Diagnostic{file: file, position: position}, root) do
+    path = Path.relative_to(file, root)
     {start_line, start_col, end_line, end_col} = normalize(position)
 
     [
       %{
         physicalLocation: %{
           artifactLocation: %{
-            uri: path,
-            uriBaseId: "SRCROOT"
+            uri: path
           },
           region: %{
             startLine: start_line,
@@ -76,7 +79,7 @@ defmodule MixMachine.Format.Sarif do
     ]
   end
 
-  defp normalize(nil), do: {0, 0, 0, 0}
-  defp normalize(line) when is_integer(line), do: {line, 0, line, 0}
+  defp normalize(nil), do: {1, 1, 1, 1}
+  defp normalize(line) when is_integer(line), do: {line, 1, line, 1}
   defp normalize(tuple), do: tuple
 end

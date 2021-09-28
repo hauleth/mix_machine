@@ -1,4 +1,10 @@
 defmodule MixMachine.Format.CodeClimate do
+  @moduledoc """
+  Produce output in subset of [CodeClimate][cc] format for use with [GitLab CI Code Quality][gl-ci].
+
+  [cc]: https://codeclimate.com/customers/
+  [gl-ci]: https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html
+  """
   @behaviour MixMachine.Format
 
   alias Mix.Task.Compiler.Diagnostic
@@ -8,18 +14,18 @@ defmodule MixMachine.Format.CodeClimate do
   @impl true
   def render(diagnostics, opts) do
     diagnostics
-    |> Enum.map(&encode/1)
+    |> Enum.map(&encode(&1, opts.root))
     |> Jason.encode_to_iodata!(pretty: opts.pretty)
   end
 
-  defp encode(%Diagnostic{} = entry) do
+  defp encode(%Diagnostic{} = entry, root) do
     %{
       severity: severity(entry.severity),
       category: entry.compiler_name,
       description: :unicode.characters_to_binary(entry.message),
       fingerprint: Utils.fingerprint(entry),
       location: %{
-        path: Path.relative_to_cwd(entry.file),
+        path: Path.relative_to(entry.file, root),
         lines: %{
           begin: line(entry.position)
         }
