@@ -48,7 +48,7 @@ defmodule Mix.Tasks.Compile.Machine do
   end
 
   defp format(name) do
-    camelized = Macro.camelize(name)
+    camelized = Macro.camelize(to_string(name))
     {:ok, Module.safe_concat(MixMachine.Format, camelized)}
   rescue
     ArgumentError -> :error
