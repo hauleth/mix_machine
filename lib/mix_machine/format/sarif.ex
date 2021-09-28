@@ -1,12 +1,16 @@
 defmodule MixMachine.Format.Sarif do
+  @moduledoc """
+  Produce [SARIF][] output for use with [GitHub Actions Code Scanning][gha].
+
+  [SARIF]: https://sarifweb.azurewebsites.net
+  [gha]: https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning
+  """
   @behaviour MixMachine.Format
 
   @version "2.1.0"
   @schema "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-#{@version}.json"
 
   alias Mix.Task.Compiler.Diagnostic
-
-  alias MixMachine.Utils
 
   @impl true
   def render(diagnostics, opts) do

@@ -1,6 +1,10 @@
 defmodule Mix.Tasks.Compile.Machine do
   use Mix.Task.Compiler
 
+  @moduledoc """
+  Compile the project and produce report in machine readable format
+  """
+
   @opts [
     strict: [
       output: :string,

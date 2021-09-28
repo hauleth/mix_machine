@@ -1,4 +1,10 @@
 defmodule MixMachine.Format.CodeClimate do
+  @moduledoc """
+  Produce output in subset of [CodeClimate][cc] format for use with [GitLab CI Code Quality][gl-ci].
+
+  [cc]: https://codeclimate.com/customers/
+  [gl-ci]: https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html
+  """
   @behaviour MixMachine.Format
 
   alias Mix.Task.Compiler.Diagnostic

@@ -22,7 +22,8 @@ defmodule MixMachine.MixProject do
   defp deps do
     [
       {:jason, "~> 1.0"},
-      {:credo, ">= 0.0.0", only: :dev, runtime: false}
+      {:credo, ">= 0.0.0", only: :dev, runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 end
