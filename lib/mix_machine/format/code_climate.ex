@@ -14,18 +14,18 @@ defmodule MixMachine.Format.CodeClimate do
   @impl true
   def render(diagnostics, opts) do
     diagnostics
-    |> Enum.map(&encode/1)
+    |> Enum.map(&encode(&1, opts.root))
     |> Jason.encode_to_iodata!(pretty: opts.pretty)
   end
 
-  defp encode(%Diagnostic{} = entry) do
+  defp encode(%Diagnostic{} = entry, root) do
     %{
       severity: severity(entry.severity),
       category: entry.compiler_name,
       description: :unicode.characters_to_binary(entry.message),
       fingerprint: Utils.fingerprint(entry),
       location: %{
-        path: Path.relative_to_cwd(entry.file),
+        path: Path.relative_to(entry.file, root),
         lines: %{
           begin: line(entry.position)
         }
