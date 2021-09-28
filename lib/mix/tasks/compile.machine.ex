@@ -15,11 +15,14 @@ defmodule Mix.Tasks.Compile.Machine do
 
   @impl true
   def run(argv) do
-    {opts, _, _} = OptionParser.parse(argv, @opts)
+    {args, _, _} = OptionParser.parse(argv, @opts)
+    project_config = Mix.Project.config()
+    config = Keyword.get(project_config, :machine, [])
 
-    output = Keyword.get(opts, :output, "report.json")
-    format = Keyword.get(opts, :format, "sarif")
-    pretty = Keyword.get(opts, :pretty, false)
+    output = option(args, config, :output, "report.json")
+    format = option(args, config, :format, "sarif")
+    pretty = option(args, config, :pretty, false)
+    root = Path.expand(option(args, config, :root, File.cwd!()))
 
     formatter =
       case format(format) do
@@ -31,7 +34,8 @@ defmodule Mix.Tasks.Compile.Machine do
       File.write!(
         output,
         formatter.render(diagnostics, %{
-          pretty: pretty
+          pretty: pretty,
+          root: root
         })
       )
 
@@ -44,5 +48,9 @@ defmodule Mix.Tasks.Compile.Machine do
     {:ok, Module.safe_concat(MixMachine.Format, camelized)}
   rescue
     ArgumentError -> :error
+  end
+
+  defp option(args, config, key, default) do
+    Keyword.get_lazy(args, key, fn -> Keyword.get(config, key, default) end)
   end
 end

@@ -13,7 +13,7 @@ defmodule MixMachine.Format.Sarif do
     runs =
       diagnostics
       |> Enum.group_by(& &1.compiler_name)
-      |> Enum.map(&build/1)
+      |> Enum.map(&build(&1, opts.root))
 
     Jason.encode_to_iodata!(%{
       version: @version,
@@ -22,7 +22,7 @@ defmodule MixMachine.Format.Sarif do
     }, pretty: opts.pretty)
   end
 
-  defp build({name, diagnostics}) do
+  defp build({name, diagnostics}, root) do
     %{
       tool: %{
         driver: %{
@@ -30,19 +30,16 @@ defmodule MixMachine.Format.Sarif do
           rules: []
         }
       },
-      results: Enum.map(diagnostics, &into_result/1)
+      results: Enum.map(diagnostics, &into_result(&1, root))
     }
   end
 
-  defp into_result(%Diagnostic{} = diagnostic) do
+  defp into_result(%Diagnostic{} = diagnostic, root) do
     %{
       message: %{text: :unicode.characters_to_binary(diagnostic.message)},
       kind: kind(diagnostic.severity),
       level: level(diagnostic.severity),
-      locations: locations(diagnostic),
-      partialFingerprints: %{
-        primaryLocationLineHash: Utils.fingerprint(diagnostic.position)
-      }
+      locations: locations(diagnostic, root)
     }
   end
 
@@ -54,14 +51,15 @@ defmodule MixMachine.Format.Sarif do
   defp level(:hint), do: "note"
   defp level(:information), do: "none"
 
-  defp locations(%Diagnostic{file: file, position: position}) do
+  defp locations(%Diagnostic{file: file, position: position}, root) do
+    path = Path.relative_to(file, root)
     {start_line, start_col, end_line, end_col} = normalize(position)
 
     [
       %{
         physicalLocation: %{
           artifactLocation: %{
-            uri: file,
+            uri: path
           },
           region: %{
             startLine: start_line,

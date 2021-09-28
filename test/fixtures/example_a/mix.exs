@@ -8,7 +8,10 @@ defmodule ExampleA.MixProject do
       start_permanent: Mix.env() == :prod,
       build_path: "../../../_build",
       deps_path: "../../../deps",
-      deps: deps()
+      deps: deps(),
+      machine: [
+        root: "../../.."
+      ]
     ]
   end
 

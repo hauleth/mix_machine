@@ -1,5 +1,6 @@
 defmodule MixMachine.Format do
   @type opts() :: %{
+          root: Path.t(),
           pretty: boolean()
         }
 
