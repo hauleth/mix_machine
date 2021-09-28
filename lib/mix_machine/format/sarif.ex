@@ -76,7 +76,7 @@ defmodule MixMachine.Format.Sarif do
     ]
   end
 
-  defp normalize(nil), do: {0, 0, 0, 0}
-  defp normalize(line) when is_integer(line), do: {line, 0, line, 0}
+  defp normalize(nil), do: {1, 1, 1, 1}
+  defp normalize(line) when is_integer(line), do: {line, 1, line, 1}
   defp normalize(tuple), do: tuple
 end
