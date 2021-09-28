@@ -21,7 +21,8 @@ defmodule MixMachine.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:jason, "~> 1.0"}
+      {:jason, "~> 1.0"},
+      {:credo, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 end
