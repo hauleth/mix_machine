@@ -2,7 +2,23 @@ defmodule Mix.Tasks.Compile.Machine do
   use Mix.Task.Compiler
 
   @moduledoc """
-  Compile the project and produce report in machine readable format
+  Compile the project and produce report in machine readable format.
+
+  ## Flags
+
+   + `--format <format>` (`-f`) - output format, currently supported values are
+     `sarif` and `code_climate`, defaults to `sarif`.
+   + `--output <path>` (`-o`) - output file, defaults to `report.json`.
+   + `--pretty` - pretty print output.
+
+  ## Options
+
+   + `:format` - atom `:sarif` or `:code_climate` that describes default format.
+   + `:output` - default filename to produce output.
+   + `:pretty` - boolean flag whether the output should be pretty printed.
+   + `:root` - relative path to root directory, defaults to current working
+     directory. It can be useful in situations when you have multirepo where
+     the Elixir application isn't mounted at root of the repository.
   """
 
   @opts [
