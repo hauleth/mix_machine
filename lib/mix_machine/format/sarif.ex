@@ -55,15 +55,13 @@ defmodule MixMachine.Format.Sarif do
   defp level(:information), do: "none"
 
   defp locations(%Diagnostic{file: file, position: position}) do
-    path = Path.relative_to_cwd(file)
     {start_line, start_col, end_line, end_col} = normalize(position)
 
     [
       %{
         physicalLocation: %{
           artifactLocation: %{
-            uri: path,
-            uriBaseId: "SRCROOT"
+            uri: file,
           },
           region: %{
             startLine: start_line,
