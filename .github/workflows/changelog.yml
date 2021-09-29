@@ -1,8 +1,8 @@
 name: Changelog
 
 on:
-  schedule:
-    - cron: '0 0 * * *'
+  push:
+    branches: [ master ]
 
 jobs:
   update-changelog:
@@ -23,4 +23,4 @@ jobs:
         git config user.email ""
         git config user.name "GitHub Action Bot"
         git diff -- CHANGELOG.md
-        git commit -m "chore: update CHANGELOG $(date --iso-8601)" CHANGELOG.md && git push origin master
+        git commit -m "chore: update CHANGELOG $(date --iso-8601)" CHANGELOG.md && git push origin master || true
