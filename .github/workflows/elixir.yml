@@ -60,7 +60,7 @@ jobs:
     - name: Install dependencies
       run: mix do deps.get, deps.compile
       working-directory: test/fixtures/${{ matrix.project }}
-    - name: Run tests
+    - name: Compile project and produce SARIF report
       run: mix compile.machine --format sarif --output results.sarif
       working-directory: test/fixtures/${{ matrix.project }}
     - uses: github/codeql-action/upload-sarif@v1
