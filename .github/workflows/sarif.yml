@@ -8,7 +8,7 @@ on:
 
 jobs:
   sarif-test:
-    name: Try to upload SARIF report
+    name: Check report
     runs-on: ubuntu-latest
     strategy:
       matrix:
