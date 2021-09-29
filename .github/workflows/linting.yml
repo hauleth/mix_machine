@@ -95,7 +95,10 @@ jobs:
       with:
         filter_pull_request: '.pull_request._links.issue.href'
     - name: Check
-      run: "! git log --oneline -E --invert-grep --grep='^(ft|fix|docs|chore):' --pretty=format:'::error title=Invalid commit message::%h %s' origin/$GITHUB_BASE_REF... | grep '.'"
+      env:
+        TYPES: ft|fix|docs|chore|test
+      run: |
+        ! git log --oneline -E --invert-grep --grep="^($TYPES):" --pretty=format:"::error title=Invalid commit message::%h %s" origin/$GITHUB_BASE_REF... | grep "."
     - name: Unlabel correct PR
       if: ${{ success() }}
       run: |

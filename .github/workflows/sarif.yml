@@ -15,9 +15,14 @@ jobs:
         otp_version: ['24.0', '23.3', '22.3']
         elixir_version: ['1.10.3', '1.11.4', '1.12.1']
         rebar3_version: ['3.15.2']
-        project: ['example_a']
+        project: ['failure_simple', 'pass_simple']
     steps:
     - uses: actions/checkout@v2
+    - name: Install JQ
+      run: |
+        mkdir -p .local/bin
+        wget -o .local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        echo ".local/bin" >> $GITHUB_PATH
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
       with:
