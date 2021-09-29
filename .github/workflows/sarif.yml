@@ -8,22 +8,25 @@ on:
 
 jobs:
   sarif-test:
-    name: Try to upload SARIF report
+    name: Check report
     runs-on: ubuntu-latest
     strategy:
       matrix:
         otp_version: ['24.0', '23.3', '22.3']
         elixir_version: ['1.10.3', '1.11.4', '1.12.1']
-        rebar3_version: ['3.15.2']
-        project: ['example_a']
+        project: ['failure_simple', 'pass_simple']
     steps:
     - uses: actions/checkout@v2
+    - name: Install JQ
+      run: |
+        mkdir -p .local/bin
+        wget -o .local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        echo ".local/bin" >> $GITHUB_PATH
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
       with:
         otp-version: ${{ matrix.otp_version }}
         elixir-version: ${{ matrix.elixir_version }}
-        rebar3-version: ${{ matrix.rebar3_version }}
     - name: Restore dependencies cache
       uses: actions/cache@v2
       with:
@@ -34,8 +37,48 @@ jobs:
       run: mix do deps.get, deps.compile
       working-directory: test/fixtures/${{ matrix.project }}
     - name: Compile project and produce SARIF report
-      run: mix compile.machine --format sarif --output results.sarif
+      run: mix compile.machine --format sarif
       working-directory: test/fixtures/${{ matrix.project }}
-    - uses: github/codeql-action/upload-sarif@v1
-      with:
-        sarif_file: test/fixtures/${{ matrix.project }}/results.sarif
+    - name: Upload SARIF report
+      id: sarif_upload
+      run: |
+        echo $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/code-scanning/sarifs
+        curl -X POST \
+          --header 'authorization: Bearer ${{ github.token }}' \
+          --header 'content-type: application/json' \
+          --data "$(gzip -c report.json | base64 -w0 | jq -R --arg ref $GITHUB_REF --arg sha $GITHUB_SHA '{commit_sha: $sha, ref: $ref, sarif: .}')" \
+          $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/code-scanning/sarifs \
+          | jq -r '"sarif_url=\(.url)"' >> $GITHUB_ENV
+      working-directory: test/fixtures/${{ matrix.project }}
+    - name: Check report
+      run: |
+        result=false
+
+        for i in {0..10}
+        do
+          response=$(curl -X GET \
+            --header 'authorization: Bearer ${{ github.token }}' \
+            --header 'content-type: application/json' \
+            ${{ env.sarif_url }})
+          status=$(echo "$response" | jq -r .processing_status)
+          echo "$status" >&2
+          if [ "$status" = complete ]; then
+            echo "$response" | jq -r .analyses_url
+            curl -X GET \
+              --output report.json \
+              --header 'authorization: Bearer ${{ github.token }}' \
+              --header 'content-type: application/json' \
+              "$(echo "$response" | jq -r .analyses_url)"
+
+            if mix run validate.exs --report report.json --token ${{ github.token }}; then
+              result=true
+            fi
+
+            break
+          fi
+
+          sleep 1
+        done
+
+        "$result"
+      working-directory: test/fixtures/${{ matrix.project }}

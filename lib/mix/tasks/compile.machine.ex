@@ -50,17 +50,21 @@ defmodule Mix.Tasks.Compile.Machine do
         _ -> Mix.raise("Unknown format #{format}", exit_status: 2)
       end
 
-    with {status, diagnostics} <- Mix.Task.run("compile", argv) do
-      File.write!(
-        output,
-        formatter.render(diagnostics, %{
-          pretty: pretty,
-          root: root
-        })
-      )
+    {status, diagnostics} =
+      case Mix.Task.run("compile", argv) do
+        {_, _} = result -> result
+        status -> {status, []}
+      end
 
-      {status, diagnostics}
-    end
+    File.write!(
+      output,
+      formatter.render(diagnostics, %{
+        pretty: pretty,
+        root: root
+      })
+    )
+
+    {status, diagnostics}
   end
 
   defp format(name) do
