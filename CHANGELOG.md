@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.1.1"></a>
+## [v0.1.1] - 2021-09-29
 ### Bug Fixes
 - add dummy run if there is none
 
@@ -19,4 +22,5 @@
 - add basic documentation to the project
 
 
-[Unreleased]: https://github.com/hauleth/mix_machine/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/hauleth/mix_machine/compare/v0.1.1...HEAD
+[v0.1.1]: https://github.com/hauleth/mix_machine/compare/v0.1.0...v0.1.1

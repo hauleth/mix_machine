@@ -5,7 +5,7 @@ defmodule MixMachine.MixProject do
     [
       app: :mix_machine,
       description: "Produce machine readable output from Mix",
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.10",
       compilers: compilers(Mix.env()) ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
