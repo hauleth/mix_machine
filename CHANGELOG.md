@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Bug Fixes
+- add dummy run if there is none
+
 
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2021-09-28
