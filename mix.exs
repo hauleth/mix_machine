@@ -7,6 +7,7 @@ defmodule MixMachine.MixProject do
       description: "Produce machine readable output from Mix",
       version: "0.1.0",
       elixir: "~> 1.10",
+      compilers: compilers(Mix.env()) ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: [
@@ -31,12 +32,16 @@ defmodule MixMachine.MixProject do
     ]
   end
 
+  defp compilers(:dev), do: [:unused]
+  defp compilers(_), do: []
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:jason, "~> 1.0"},
       {:credo, ">= 0.0.0", only: :dev, runtime: false},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:mix_unused, "~> 0.2.0", only: :dev, runtime: false}
     ]
   end
 end
