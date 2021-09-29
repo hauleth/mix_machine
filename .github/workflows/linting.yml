@@ -29,14 +29,14 @@ jobs:
         curl -X DELETE \
           --header 'authorization: Bearer ${{ github.token }}' \
           --header 'content-type: application/json' \
-          ${{ steps.issue_url.outputs.value }}/labels/invalid/unformatted
+          ${{ steps.issue_url.outputs.value }}/labels/invalid/format
     - name: Label PR with invalid commit messages
       if: ${{ failure() }}
       run: |
         curl -X POST \
           --header 'authorization: Bearer ${{ github.token }}' \
           --header 'content-type: application/json' \
-          --data '["invalid/unformatted"]' \
+          --data '["invalid/format"]' \
           ${{ steps.issue_url.outputs.value }}/labels
 
   credo:
@@ -71,14 +71,14 @@ jobs:
         curl -X DELETE \
           --header 'authorization: Bearer ${{ github.token }}' \
           --header 'content-type: application/json' \
-          ${{ steps.issue_url.outputs.value }}/labels/invalid/unorthodox
+          ${{ steps.issue_url.outputs.value }}/labels/invalid/credo
     - name: Label PR with invalid commit messages
       if: ${{ failure() }}
       run: |
         curl -X POST \
           --header 'authorization: Bearer ${{ github.token }}' \
           --header 'content-type: application/json' \
-          --data '["invalid/unorthodox"]' \
+          --data '["invalid/credo"]' \
           ${{ steps.issue_url.outputs.value }}/labels
 
   commit_messages:
