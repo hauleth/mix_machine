@@ -48,7 +48,6 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Refs
-      run: git show-ref
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Check
-      run: "git log --exit-code --oneline -E --invert-grep --grep='^(ft|fix|docs|chore):' ^refs/remotes/origin/$GITHUB_BASE_REF HEAD"
+      run: "! git log --oneline -E --invert-grep --grep='^(ft|fix|docs|chore):' --pretty=format:'::error title=Invalid commit message::%h %s' origin/$GITHUB_BASE_REF... | grep '.'"
