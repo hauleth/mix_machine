@@ -13,6 +13,29 @@ defmodule MixMachine.Format.Sarif do
   alias Mix.Task.Compiler.Diagnostic
 
   @impl true
+  def render([], opts) do
+    # We need special case when there is no diagnostics, as GitHub do not like
+    # when `runs` field is empty array
+    dummy_run = %{
+      tool: %{
+        driver: %{
+          name: "Elixir",
+          rules: []
+        }
+      },
+      results: []
+    }
+
+    Jason.encode_to_iodata!(
+      %{
+        version: @version,
+        "$schema": @schema,
+        runs: [dummy_run]
+      },
+      pretty: opts.pretty
+    )
+  end
+
   def render(diagnostics, opts) do
     runs =
       diagnostics
