@@ -1,4 +1,4 @@
-name: Elixir CI
+name: SARIF
 
 on:
   push:
@@ -7,14 +7,15 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-    name: Build and test
+  sarif-test:
+    name: Try to upload SARIF report
     runs-on: ubuntu-latest
     strategy:
       matrix:
         otp_version: ['24.0', '23.3', '22.3']
         elixir_version: ['1.10.3', '1.11.4', '1.12.1']
         rebar3_version: ['3.15.2']
+        project: ['example_a']
     steps:
     - uses: actions/checkout@v2
     - name: Set up Elixir
@@ -31,5 +32,10 @@ jobs:
         restore-keys: ${{ runner.os }}-mix-
     - name: Install dependencies
       run: mix do deps.get, deps.compile
-    - name: Run tests
-      run: mix test
+      working-directory: test/fixtures/${{ matrix.project }}
+    - name: Compile project and produce SARIF report
+      run: mix compile.machine --format sarif --output results.sarif
+      working-directory: test/fixtures/${{ matrix.project }}
+    - uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: test/fixtures/${{ matrix.project }}/results.sarif

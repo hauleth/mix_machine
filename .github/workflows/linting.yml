@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Get PR URL
+      uses: Dovyski/payload-info-action@master
+      id: issue_url
+      with:
+        filter_pull_request: '.pull_request._links.issue.href'
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
       with:
@@ -18,12 +23,32 @@ jobs:
         rebar3-version: '3.15.2'
     - name: Check formatting
       run: mix format --check-formatted
+    - name: Unlabel correct PR
+      if: ${{ success() }}
+      run: |
+        curl -X DELETE \
+          --header 'authorization: Bearer ${{ github.token }}' \
+          --header 'content-type: application/json' \
+          ${{ steps.issue_url.outputs.value }}/labels/invalid/unformatted
+    - name: Label PR with invalid commit messages
+      if: ${{ failure() }}
+      run: |
+        curl -X POST \
+          --header 'authorization: Bearer ${{ github.token }}' \
+          --header 'content-type: application/json' \
+          --data '["invalid/unformatted"]' \
+          ${{ steps.issue_url.outputs.value }}/labels
 
   credo:
     name: Check our credo
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Get PR URL
+      uses: Dovyski/payload-info-action@master
+      id: issue_url
+      with:
+        filter_pull_request: '.pull_request._links.issue.href'
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
       with:
@@ -40,6 +65,21 @@ jobs:
       run: mix do deps.get, deps.compile
     - name: Run Credo
       run: mix credo --all
+    - name: Unlabel correct PR
+      if: ${{ success() }}
+      run: |
+        curl -X DELETE \
+          --header 'authorization: Bearer ${{ github.token }}' \
+          --header 'content-type: application/json' \
+          ${{ steps.issue_url.outputs.value }}/labels/invalid/unorthodox
+    - name: Label PR with invalid commit messages
+      if: ${{ failure() }}
+      run: |
+        curl -X POST \
+          --header 'authorization: Bearer ${{ github.token }}' \
+          --header 'content-type: application/json' \
+          --data '["invalid/unorthodox"]' \
+          ${{ steps.issue_url.outputs.value }}/labels
 
   commit_messages:
     name: Use convention for commit messages
@@ -49,7 +89,7 @@ jobs:
       with:
         fetch-depth: 0
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Extract version from package.json
+    - name: Get PR URL
       uses: Dovyski/payload-info-action@master
       id: issue_url
       with:
