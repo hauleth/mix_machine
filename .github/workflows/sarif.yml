@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        otp_version: ['24.0', '23.3', '22.3']
-        elixir_version: ['1.10.3', '1.11.4', '1.12.1']
-        project: ['failure_simple', 'pass_simple']
+        otp_version: [] # ['24.0', '23.3', '22.3']
+        elixir_version: [] # ['1.10.3', '1.11.4', '1.12.1']
+        project: [] # ['failure_simple', 'pass_simple']
     steps:
     - uses: actions/checkout@v2
     - name: Install JQ

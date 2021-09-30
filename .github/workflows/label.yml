@@ -46,30 +46,27 @@ jobs:
             repo: context.repo.repo,
              run_id: ${{ github.event.workflow_run.id }},
           })
+          console.log(workflow_run)
           var labels = {
             failure: [],
             success: []
           }
-          for (const job of jobs.data.jobs) {
-            console.log(job)
-            var match = job.name.match(/\(([^)]+)\)/)
-            var label = match && match[1]
-            if (label) { labels[job.conclusion].push(label) }
+          for (var job in jobs.data.jobs) {
+            var label = job.title.match(/\(([^)]+)\)/)[1]
+            if (label) { labels[job.conclusion].append(label) }
           }
           console.log(labels)
-          if (labels.failure != []) {
+          await github.issues.addLabels({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: workflow_run.pull_requests[0].number,
+            labels: labels.failure
+          })
+          for (var label in labels.success) {
             await github.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: issue_number,
-              labels: labels.failure
-            })
-          }
-          for (const label of labels.success) {
-            await github.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue_number,
-              name: label
+              issue_number: 0,
+              name: label.name
             })
           }
