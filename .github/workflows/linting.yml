@@ -1,54 +1,35 @@
 name: Lints
 
 on:
-  pull_request_target:
+  pull_request:
     branches: [ master ]
 
 jobs:
   formatting:
-    name: Check formatting
+    name: Check formatting (invalid/format)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Get PR URL
-      uses: Dovyski/payload-info-action@master
-      id: issue_url
-      with:
-        filter_pull_request: '.pull_request._links.issue.href'
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
       with:
         otp-version: '24.0'
         elixir-version: '1.12.1'
         rebar3-version: '3.15.2'
+    - name: Restore dependencies cache
+      uses: actions/cache@v2
+      with:
+        path: deps
+        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+        restore-keys: ${{ runner.os }}-mix-
     - name: Check formatting
       run: mix format --check-formatted
-    - name: Unlabel correct PR
-      if: ${{ success() }}
-      run: |
-        curl -X DELETE \
-          --header 'authorization: Bearer ${{ github.token }}' \
-          --header 'content-type: application/json' \
-          ${{ steps.issue_url.outputs.value }}/labels/invalid/format
-    - name: Label PR with invalid commit messages
-      if: ${{ failure() }}
-      run: |
-        curl -X POST \
-          --header 'authorization: Bearer ${{ github.token }}' \
-          --header 'content-type: application/json' \
-          --data '["invalid/format"]' \
-          ${{ steps.issue_url.outputs.value }}/labels
 
   credo:
-    name: Check our credo
+    name: Check our credo (invalid/credo)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Get PR URL
-      uses: Dovyski/payload-info-action@master
-      id: issue_url
-      with:
-        filter_pull_request: '.pull_request._links.issue.href'
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
       with:
@@ -65,52 +46,3 @@ jobs:
       run: mix do deps.get, deps.compile
     - name: Run Credo
       run: mix credo --all
-    - name: Unlabel correct PR
-      if: ${{ success() }}
-      run: |
-        curl -X DELETE \
-          --header 'authorization: Bearer ${{ github.token }}' \
-          --header 'content-type: application/json' \
-          ${{ steps.issue_url.outputs.value }}/labels/invalid/credo
-    - name: Label PR with invalid commit messages
-      if: ${{ failure() }}
-      run: |
-        curl -X POST \
-          --header 'authorization: Bearer ${{ github.token }}' \
-          --header 'content-type: application/json' \
-          --data '["invalid/credo"]' \
-          ${{ steps.issue_url.outputs.value }}/labels
-
-  commit_messages:
-    name: Use convention for commit messages
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Get PR URL
-      uses: Dovyski/payload-info-action@master
-      id: issue_url
-      with:
-        filter_pull_request: '.pull_request._links.issue.href'
-    - name: Check
-      env:
-        TYPES: ft|fix|docs|chore|test
-      run: |
-        ! git log --oneline -E --invert-grep --grep="^($TYPES):" --pretty=format:"::error title=Invalid commit message::%h %s" origin/$GITHUB_BASE_REF... | grep "."
-    - name: Unlabel correct PR
-      if: ${{ success() }}
-      run: |
-        curl -X DELETE \
-          --header 'authorization: Bearer ${{ github.token }}' \
-          --header 'content-type: application/json' \
-          ${{ steps.issue_url.outputs.value }}/labels/invalid/commit-messages
-    - name: Label PR with invalid commit messages
-      if: ${{ failure() }}
-      run: |
-        curl -X POST \
-          --header 'authorization: Bearer ${{ github.token }}' \
-          --header 'content-type: application/json' \
-          --data '["invalid/commit-messages"]' \
-          ${{ steps.issue_url.outputs.value }}/labels
