@@ -1,0 +1,49 @@
+name: Pull Requests Labels
+
+on:
+  workflow_run:
+    workflows: ['Lints']
+    types:
+      - completed
+
+jobs:
+  label:
+    name: Add jobs labels
+    runs-on: ubuntu-latest
+    if: >
+      ${{ github.event.workflow_run.event == 'pull_request' &&
+          github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+    - name: 'Set labels'
+      uses: actions/github-script@v3.1.0
+      with:
+        script: |
+          var workflow_run = ${{ toJSON(github.event.workflow_run) }}
+          var jobs = await octokit.rest.actions.listJobsForWorkflowRun({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            run_id: workflow_run.id
+          })
+          var labels = {
+            failure: [],
+            success: []
+          }
+          for (var job in jobs.jobs) {
+            var label = job.title.match(/\(([^)]+)\)/)[1]
+            if (label) { labels[job.conclusion].append({name: label}) }
+          }
+          console.log(labels)
+          await octokit.rest.issues.addLabels({
+            owner: context.repo.owner,
+            repo: contect.repo.repo,
+            issue_number: workflow_run.pull_requests[0].number,
+            labels: labels.failure
+          })
+          for (var label in labels.success) {
+            await octokit.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: contect.repo.repo,
+              issue_number: 0,
+              name: label.name
+            })
+          }
