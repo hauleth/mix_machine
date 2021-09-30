@@ -20,7 +20,8 @@ defmodule MixMachine.MixProject do
         main: "Mix.Tasks.Compile.Machine",
         groups_for_modules: [
           Formats: ~r/^MixMachine\.Format\./
-        ]
+        ],
+        extras: ~w[CHANGELOG.md]
       ]
     ]
   end

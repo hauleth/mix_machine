@@ -38,3 +38,13 @@ jobs:
           --header 'content-type: application/json' \
           --data '["invalid/commit-messages"]' \
           ${{ steps.issue_url.outputs.value }}/labels
+
+  labeler:
+    name: Label PRs depending on changes
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: actions/labeler@v3
