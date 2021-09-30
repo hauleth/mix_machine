@@ -5,6 +5,19 @@ on:
     branches: [ master ]
 
 jobs:
+  store-pr:
+    name: Store PR number
+    runs-on: ubuntu-latest
+    steps:
+    - name: Save PR number
+      run: |
+        mkdir -p ./pr
+        echo ${{ github.event.number }} > ./pr/NR
+    - uses: actions/upload-artifact@v2
+      with:
+        name: pr
+        path: pr/
+
   formatting:
     name: Check formatting (invalid/format)
     runs-on: ubuntu-latest
