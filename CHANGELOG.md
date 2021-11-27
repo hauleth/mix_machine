@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Documentation
+- add GitHub Actions example to readme
+
 
 <a name="v0.1.1"></a>
 ## [v0.1.1] - 2021-09-29
