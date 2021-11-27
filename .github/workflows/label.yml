@@ -44,7 +44,7 @@ jobs:
           var jobs = await github.actions.listJobsForWorkflowRun({
             owner: context.repo.owner,
             repo: context.repo.repo,
-             run_id: ${{ github.event.workflow_run.id }},
+            run_id: ${{ github.event.workflow_run.id }},
           })
           var labels = {
             failure: [],
