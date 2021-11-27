@@ -66,6 +66,33 @@ def project do
   ]
 ```
 
+### Usage in GitHub Actions
+
+In your github `.yml` file, after you download Elixir deps, compile your project
+with `mix mix_machine.compile`.
+
+``` yaml
+    - name: Compile Deps
+      run: mix deps.compile
+    - name: Compile Project
+      run: mix compile.machine
+```
+
+Note: This must come before any other lines that would inadvertently compile
+your code such as `mix test`!
+
+Note: the `mix deps.compile` in a separate step is not required but it can be
+helpful to separate any compilation warnings in your project from any
+compilation warnings in your deps.
+
+Then later in the `.yml` file add this to upload your Sarif file to your GitHub repository:
+``` yaml
+    - name: Upload Sarif
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: report.json
+```
+
 ## License
 
 See [LICENSE](LICENSE).
