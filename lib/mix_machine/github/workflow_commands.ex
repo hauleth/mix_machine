@@ -1,14 +1,26 @@
 defmodule MixMachine.Github.WorkflowCommands do
+  @doc """
+  Print debug message
+  """
   def debug(message), do: print(:debug, message)
 
   @log_metadata [:title, :file, :col, :end_column, :line, :end_line]
 
+  @doc """
+  Log message using `notice` level
+  """
   def notice(message, meta \\ %{}),
     do: print(:notice, Map.take(meta, @log_metadata), message)
 
+  @doc """
+  Log message using `warning` level
+  """
   def warning(message, meta \\ %{}),
     do: print(:warning, Map.take(meta, @log_metadata), message)
 
+  @doc """
+  Log message using `error` level
+  """
   def error(message, meta \\ %{}),
     do: print(:error, Map.take(meta, @log_metadata), message)
 
@@ -45,6 +57,7 @@ defmodule MixMachine.Github.WorkflowCommands do
     [" " | Enum.intersperse(values, ",")]
   end
 
+  # Change `key` to real camel case (first letter lowercase and rest mixed case)
   defp format_key(key) do
     <<c, rest::binary>> = Macro.camelize(to_string(key))
 
