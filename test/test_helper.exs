@@ -1,1 +1,1 @@
-ExUnit.start(formatters: [MixMachine.Github.TestLog])
+ExUnit.start() #formatters: [MixMachine.Github.TestLog])
