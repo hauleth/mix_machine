@@ -3,10 +3,15 @@ defmodule MixMachine.Github.TestLog do
 
   def start_link(_), do: GenServer.start_link(__MODULE__, [])
 
-  def init(_), do: {:ok, []}
+  def init(_) do
+    counter = :atomics.new(1, [])
+
+    {:ok, %{counter: counter}}
+  end
 
   def handle_cast({:test_finished, test}, state) do
-    format_test(test)
+    format_test(test, state)
+
     {:noreply, state}
   end
 
@@ -21,27 +26,40 @@ defmodule MixMachine.Github.TestLog do
 
   alias MixMachine.Github.WorkflowCommands, as: C
 
-  defp format_test(%ExUnit.Test{state: {:failed, _failures}} = test) do
-    C.error("Test #{test.name} failed", meta(test))
+  defp format_test(%ExUnit.Test{state: {:failed, failures}} = test, %{counter: counter}) do
+    id = :atomics.add_get(counter, 1, 1)
+
+    C.error("#{test.name} failed", meta(test))
+
+    C.group("#{test.name} report", fn ->
+      IO.puts("")
+      IO.puts(
+        ExUnit.Formatter.format_test_failure(test, failures, id, 80, fn _, msg -> msg end)
+      )
+    end)
   end
 
-  defp format_test(%ExUnit.Test{state: {:invalid, module}} = test) do
+  defp format_test(%ExUnit.Test{state: {:invalid, module}} = test, %{counter: counter}) do
+    _id = :atomics.add_get(counter, 1, 1)
+
     C.error(
-      "Test #{test.name} is invalid because `setup_all` in #{inspect(module)} failed",
+      "#{test.name} is invalid because `setup_all` in #{inspect(module)} failed",
       meta(test)
     )
   end
 
-  defp format_test(%ExUnit.Test{state: {:excluded, filter}} = test) do
-    C.notice("Test #{test.name} excluded by #{filter}", meta(test))
+  defp format_test(%ExUnit.Test{state: {:excluded, filter}} = test, %{counter: counter}) do
+    _id = :atomics.add_get(counter, 1, 1)
+
+    C.notice("#{test.name} excluded by #{filter}", meta(test))
   end
 
-  defp format_test(%ExUnit.Test{state: {:skipped, reason}} = test) do
-    C.notice("Test #{test.name} skipped because of #{reason}", meta(test))
+  defp format_test(%ExUnit.Test{state: {:skipped, reason}} = test, _state) do
+    C.notice("#{test.name} skipped because of #{reason}", meta(test))
   end
 
-  defp format_test(%ExUnit.Test{name: name, state: nil}) do
-    C.debug("Test #{name} passed")
+  defp format_test(%ExUnit.Test{name: name, state: nil}, _state) do
+    C.debug("#{name} passed")
   end
 
   defp meta(%ExUnit.Test{tags: tags}) do
